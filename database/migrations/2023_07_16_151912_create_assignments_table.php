@@ -16,8 +16,9 @@ return new class extends Migration
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('description');
-            $table->date('due_date');
+    $table->string('description');
+    $table->date('due_date');
+    $table->string('file_path')->nullable();
             $table->timestamps();
         });
     }

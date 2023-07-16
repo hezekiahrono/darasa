@@ -1,107 +1,113 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Http\RedirectResponse;
+use App\Models\assignments;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\View\View;
 
 
 class AssignMentController extends Controller
 {
-    //
-
-     //
-
-    /**
-    * Display a listing of the resource.
-    *
-    * @return \Illuminate\Http\Response
-    */
-    public function index()
+  /**
+     * Display a listing of the resource.
+     *
+     * @return response()
+     */
+    public function index(): View
     {
-        $student_submissions = student_submissions::orderBy('id','desc')->paginate(5);
-        return view('teachers.index', compact('teachers'));
+        $assignment = assignments::latest()->paginate(5);
+        
+        return view('assignments.index',compact('assignment'))
+                    ->with('i', (request()->input('page', 1) - 1) * 5);
     }
-
+  
     /**
-    * Show the form for creating a new resource.
-    *
-    * @return \Illuminate\Http\Response
-    */
-    public function create()
+     * Show the form for creating a new resource.
+     */
+    public function create(): View
     {
-        return view('teachers.create');
+        return view('assignments.create');
     }
-
+  
     /**
-    * Store a newly created resource in storage.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Response
-    */
-    public function store(Request $request)
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'address' => 'required',
+            'title' => 'required',
+            'description' => 'required',
+            'due_date' => 'required',
+            'file_path' => 'required|mimes:csv,txt,xlx,xls,pdf,doc,docx|max:2048',
         ]);
-        
-        teachers::create($request->post());
-
-        return redirect()->route('teachers.index')->with('success','Teacher has been created successfully.');
+    
+        $input = $request->all();
+    
+        if ($file_path = $request->file('file_path')) {
+            $destinationPath = 'images/';
+            $profileImage = date('YmdHis') . "." . $file_path->getClientOriginalExtension();
+            $file_path->move($destinationPath, $profileImage);
+            $input['file_path'] = "$profileImage";
+        }
+      
+        assignments::create($input);
+       
+        return redirect()->route('assignments.index')
+                        ->with('success','Product created successfully.');
     }
-
+  
     /**
-    * Display the specified resource.
-    *
-    * @param  \App\teacher  $company
-    * @return \Illuminate\Http\Response
-    */
-    public function show(teachers $teacher)
+     * Display the specified resource.
+     */
+    public function show(assignments $assignment): View
     {
-        return view('teachers.show',compact('teacher'));
+        return view('assignments.show',compact('assignment'));
     }
-
+  
     /**
-    * Show the form for editing the specified resource.
-    *
-    * @param  \App\teacher  $company
-    * @return \Illuminate\Http\Response
-    */
-    public function edit(teachers $teacher)
+     * Show the form for editing the specified resource.
+     */
+    public function edit(assignments $assignment): View
     {
-        return view('teachers.edit',compact('teacher'));
+        return view('assignments.edit',compact('assignment'));
     }
-
+  
     /**
-    * Update the specified resource in storage.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @param  \App\teacher  $company
-    * @return \Illuminate\Http\Response
-    */
-    public function update(Request $request, teachers $teacher)
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, assignments $assignment): RedirectResponse
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'address' => 'required',
+            'title' => 'required',
+            'description' => 'required',
+            'due_date' => 'required'
         ]);
-        
-        $teacher->fill($request->post())->save();
-
-        return redirect()->route('teachers.index')->with('success','teacher Has Been updated successfully');
+    
+        $input = $request->all();
+    
+        if ($file_path = $request->file('file_path')) {
+            $destinationPath = 'images/';
+            $profileImage = date('YmdHis') . "." . $file_path->getClientOriginalExtension();
+            $file_path->move($destinationPath, $profileImage);
+            $input['file_path'] = "$profileImage";
+        }
+            
+        $assignment->update($input);
+      
+        return redirect()->route('assignments.index')
+                        ->with('success','Product has been updated successfully.');
     }
-
+  
     /**
-    * Remove the specified resource from storage.
-    *
-    * @param  \App\teacher  $company
-    * @return \Illuminate\Http\Response
-    */
-    public function destroy(teachers $teacher)
+     * Remove the specified resource from storage.
+     */
+    public function destroy(assignments $assignment): RedirectResponse
     {
-        $teacher->delete();
-        return redirect()->route('teachers.index')->with('success','Teacher has been deleted successfully');
+        $assignment->delete();
+         
+        return redirect()->route('assignments.index')
+                        ->with('success','Product has been deleted successfully.');
     }
 }

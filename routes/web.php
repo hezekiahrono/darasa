@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeachersController;
 use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\FileUpload;
+use App\Http\Controllers\AssignMentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,8 +20,15 @@ use App\Http\Controllers\StudentsController;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
+ Route::get('/', function () {
+    return view('teachers.create');
+});
+
+Route::get('/upload-file', [FileUpload::class, 'createForm']);
+Route::post('/upload-file', [FileUpload::class, 'fileUpload'])->name('fileUpload');
 Route::resource('teachers', TeachersController::class);
 Route::resource('students', StudentsController::class);
+Route::resource('assignments', AssignMentController::class);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
